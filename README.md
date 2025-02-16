@@ -1,57 +1,16 @@
-# Ant Design Pro
+# 用户中心项目
 
-This project is initialized with [Ant Design Pro](https://pro.ant.design). Follow is the quick guide for how to use.
+## 项目简介
 
-## Environment Prepare
+一个企业中最最最常用的系统 —— `用户中心` ，说白了，就是一个简单的 “用户管理系统” ，实现了用户注册、登录、查询等基础功能。如图：
 
-Install `node_modules`:
+## 技术选型
 
-```bash
-npm install
-```
+主要运用阿里 Ant Design 生态：
 
-or
-
-```bash
-yarn
-```
-
-## Provided Scripts
-
-Ant Design Pro provides some useful script to help you quick start and build with web project, code style check and test.
-
-Scripts provided in `package.json`. It's safe to modify or add additional script:
-
-### Start project
-
-```bash
-npm start
-```
-
-### Build project
-
-```bash
-npm run build
-```
-
-### Check code style
-
-```bash
-npm run lint
-```
-
-You can also use script to auto fix some lint error:
-
-```bash
-npm run lint:fix
-```
-
-### Test code
-
-```bash
-npm test
-```
-
-## More
-
-You can view full document on our [official website](https://pro.ant.design). And welcome any feedback in our [github](https://github.com/ant-design/ant-design-pro).
+- HTML + CSS + JavaScript 三件套
+- React 开发框架
+- Ant Design Pro 项目模板
+- Ant Design 端组件库
+- Umi 开发框架
+- Umi Request 请求库
