@@ -3,33 +3,34 @@ import { DefaultFooter } from '@ant-design/pro-components';
 import React from 'react';
 
 const Footer: React.FC = () => {
-  return (
-    <DefaultFooter
-      style={{
-        background: 'none',
-      }}
-      links={[
-        {
-          key: 'Ant Design Pro',
-          title: 'Ant Design Pro',
-          href: 'https://pro.ant.design',
-          blankTarget: true,
-        },
-        {
-          key: 'github',
-          title: <GithubOutlined />,
-          href: 'https://github.com/ant-design/ant-design-pro',
-          blankTarget: true,
-        },
-        {
-          key: 'Ant Design',
-          title: 'Ant Design',
-          href: 'https://ant.design',
-          blankTarget: true,
-        },
-      ]}
-    />
-  );
+    const copyright = `${new Date().getFullYear()} FAS出品`;
+    return (
+        <DefaultFooter
+            copyright={copyright}
+            style={{
+                background: 'none',
+            }}
+            links={[
+                {
+                    key: 'blog',
+                    title: 'Blog',
+                    href: 'https://xin-fas.github.io/',
+                    blankTarget: true,
+                },
+                {
+                    key: 'github',
+                    title: (
+                        <span>
+                            <GithubOutlined style={{ marginRight: '3px' }} />
+                            FAS
+                        </span>
+                    ),
+                    href: 'https://github.com/Xin-FAS/user-center-bms_front',
+                    blankTarget: true,
+                },
+            ]}
+        />
+    );
 };
 
 export default Footer;
