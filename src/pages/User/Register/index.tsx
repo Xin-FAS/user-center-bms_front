@@ -1,14 +1,13 @@
 import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
-import { history, useModel, Helmet } from '@umijs/max';
-import { Alert, message, Tabs } from 'antd';
+import { Form, message, Tabs } from 'antd';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
+import { Helmet, history } from '@umijs/max';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
-import { flushSync } from 'react-dom';
 import { createStyles } from 'antd-style';
 import { SYSTEM_LOGO } from '@/constants';
+import { register } from '@/services/ant-design-pro/api';
 
 const useStyles = createStyles(({ token }) => {
     return {
@@ -45,65 +44,33 @@ const useStyles = createStyles(({ token }) => {
         },
     };
 });
-const LoginMessage: React.FC<{
-    content: string;
-}> = ({ content }) => {
-    return (
-        <Alert
-            style={{
-                marginBottom: 24,
-            }}
-            message={content}
-            type="error"
-            showIcon
-        />
-    );
-};
-const Login: React.FC = () => {
-    const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
+const Register: React.FC = () => {
     const [type, setType] = useState<string>('account');
-    const { initialState, setInitialState } = useModel('@@initialState');
     const { styles } = useStyles();
-    const fetchUserInfo = async () => {
-        const userInfo = await initialState?.fetchUserInfo?.();
-        if (userInfo) {
-            flushSync(() => {
-                setInitialState((s) => ({
-                    ...s,
-                    currentUser: userInfo,
-                }));
-            });
-        }
-    };
-    const handleSubmit = async (values: API.LoginParams) => {
+    const [form] = Form.useForm();
+
+    const handleSubmit = async () => {
+        const formData = form.getFieldsValue();
         try {
             // 注册
-            const user = await login({
-                ...values,
-                type,
-            });
-            if (user) {
-                const defaultLoginSuccessMessage = '登录成功！';
+            const registerResp = await register({ ...formData, planetCode: '123' });
+            if (registerResp.code !== undefined && registerResp.code >= 0) {
+                const defaultLoginSuccessMessage = `注册成功！`;
                 message.success(defaultLoginSuccessMessage);
-                await fetchUserInfo();
                 const urlParams = new URL(window.location.href).searchParams;
-                history.push(urlParams.get('redirect') || '/');
-                return;
-            }
-            // 如果失败去设置用户错误信息
-            setUserLoginState(user);
+                history.push(`/user/login?redirect=${urlParams.get('redirect')}`);
+            } else throw new Error(`register error id = ${registerResp.code}`);
         } catch (error) {
-            const defaultLoginFailureMessage = '登录失败，请重试！';
+            const defaultLoginFailureMessage = '注册失败，请重试！';
             console.log(error);
             message.error(defaultLoginFailureMessage);
         }
     };
-    const { status, type: loginType } = userLoginState;
     return (
         <div className={styles.container}>
             <Helmet>
                 <title>
-                    {'登录'}- {Settings.title}
+                    {'注册'}- {Settings.title}
                 </title>
             </Helmet>
             <div
@@ -113,18 +80,22 @@ const Login: React.FC = () => {
                 }}
             >
                 <LoginForm
+                    form={form}
                     contentStyle={{
                         minWidth: 280,
                         maxWidth: '75vw',
                     }}
                     logo={<img alt="logo" src={SYSTEM_LOGO} />}
-                    title="用户中心-登录"
-                    subTitle={'欢迎使用用户中心，请先进行登录'}
+                    title="用户中心-注册"
+                    subTitle={'注册一个属于您的账户'}
                     initialValues={{
                         autoLogin: true,
                     }}
-                    onFinish={async (values) => {
-                        await handleSubmit(values as API.LoginParams);
+                    submitter={{
+                        onSubmit: handleSubmit,
+                        searchConfig: {
+                            submitText: '注册',
+                        },
                     }}
                 >
                     <Tabs
@@ -138,10 +109,6 @@ const Login: React.FC = () => {
                             },
                         ]}
                     />
-
-                    {status === 'error' && loginType === 'account' && (
-                        <LoginMessage content={'错误的用户名和密码(admin/ant.design)'} />
-                    )}
                     {type === 'account' && (
                         <>
                             <ProFormText
@@ -175,33 +142,53 @@ const Login: React.FC = () => {
                                         type: 'string',
                                         message: '密码长度不能小于8！',
                                     },
+                                    {
+                                        validator: async (_, value) => {
+                                            const userPassword =
+                                                form.getFieldValue('checkPassword');
+                                            if (value === userPassword)
+                                                form.validateFields(['checkPassword']);
+                                            // 判断密码是否相同
+                                            return Promise.resolve();
+                                        },
+                                    },
+                                ]}
+                            />
+                            <ProFormText.Password
+                                name="checkPassword"
+                                fieldProps={{
+                                    size: 'large',
+                                    prefix: <LockOutlined />,
+                                }}
+                                placeholder={'请再次输入密码'}
+                                validateTrigger={'onBlur'}
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: '确认密码是必填项！',
+                                    },
+                                    {
+                                        min: 8,
+                                        type: 'string',
+                                        message: '密码长度不能小于8！',
+                                    },
+                                    {
+                                        validator: async (_, value) => {
+                                            const userPassword = form.getFieldValue('userPassword');
+                                            if (value !== userPassword)
+                                                return Promise.reject('两次输入的密码不一致');
+                                            // 判断密码是否相同
+                                            return Promise.resolve();
+                                        },
+                                    },
                                 ]}
                             />
                         </>
                     )}
-                    {status === 'error' && loginType === 'mobile' && (
-                        <LoginMessage content="验证码错误" />
-                    )}
-                    <div
-                        style={{
-                            marginBottom: 24,
-                        }}
-                    >
-                        <ProFormCheckbox noStyle name="autoLogin">
-                            自动登录
-                        </ProFormCheckbox>
-                        <a
-                            style={{
-                                float: 'right',
-                            }}
-                        >
-                            忘记密码 ?
-                        </a>
-                    </div>
                 </LoginForm>
             </div>
             <Footer />
         </div>
     );
 };
-export default Login;
+export default Register;

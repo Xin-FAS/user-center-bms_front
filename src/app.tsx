@@ -11,6 +11,9 @@ import React from 'react';
 
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
+const registerPath = '/user/register';
+// 拦截白名单
+const whileList = [loginPath, registerPath];
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -32,9 +35,9 @@ export async function getInitialState(): Promise<{
         }
         return undefined;
     };
-    // 如果不是登录页面，执行
+    // 如果不是在白名单中，执行
     const { location } = history;
-    if (location.pathname !== loginPath) {
+    if (!whileList.includes(location.pathname)) {
         const currentUser = await fetchUserInfo();
         return {
             fetchUserInfo,
@@ -65,10 +68,10 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
         footerRender: () => <Footer />,
         onPageChange: () => {
             const { location } = history;
+            // 排除注册和登录页面
+            if ([loginPath, registerPath].includes(location.pathname)) return;
             // 如果没有登录，重定向到 login
-            if (!initialState?.currentUser && location.pathname !== loginPath) {
-                history.push(loginPath);
-            }
+            if (!initialState?.currentUser) history.push(loginPath);
         },
         bgLayoutImgList: [
             {
@@ -134,6 +137,5 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
  */
 export const request = {
     ...errorConfig,
-    baseURL: 'http://localhost:8080/',
-    timeout: 1000,
+    timeout: 5000,
 };
