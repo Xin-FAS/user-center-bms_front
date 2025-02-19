@@ -3,7 +3,7 @@ import { login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
 import { history, useModel, Helmet } from '@umijs/max';
-import { Alert, message, Tabs } from 'antd';
+import { Alert, Button, message, Tabs, Divider, Space, Form } from 'antd';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -77,7 +77,7 @@ const Login: React.FC = () => {
     };
     const handleSubmit = async (values: API.LoginParams) => {
         try {
-            // 注册
+            // 登录
             const user = await login({
                 ...values,
                 type,
@@ -99,6 +99,17 @@ const Login: React.FC = () => {
         }
     };
     const { status, type: loginType } = userLoginState;
+
+    // 前往注册页面
+    const toRegister = () => {
+        const urlParams = new URL(window.location.href).searchParams;
+        const redirectValue = urlParams.get('redirect');
+        const search = redirectValue ? `?redirect=${redirectValue}` : '';
+        history.push({
+            pathname: '/user/register',
+            search,
+        });
+    };
     return (
         <div className={styles.container}>
             <Helmet>
@@ -119,7 +130,7 @@ const Login: React.FC = () => {
                     }}
                     logo={<img alt="logo" src={SYSTEM_LOGO} />}
                     title="用户中心-登录"
-                    subTitle={'欢迎使用用户中心，请先进行登录'}
+                    subTitle={'欢迎使用，请先进行登录'}
                     initialValues={{
                         autoLogin: true,
                     }}
@@ -134,7 +145,7 @@ const Login: React.FC = () => {
                         items={[
                             {
                                 key: 'account',
-                                label: '账户密码注册',
+                                label: '账户密码登录',
                             },
                         ]}
                     />
@@ -182,22 +193,22 @@ const Login: React.FC = () => {
                     {status === 'error' && loginType === 'mobile' && (
                         <LoginMessage content="验证码错误" />
                     )}
-                    <div
-                        style={{
-                            marginBottom: 24,
-                        }}
-                    >
-                        <ProFormCheckbox noStyle name="autoLogin">
-                            自动登录
-                        </ProFormCheckbox>
-                        <a
-                            style={{
-                                float: 'right',
-                            }}
+                    <Form.Item>
+                        <Space
+                            align={'center'}
+                            split={<Divider type={'vertical'} />}
+                            size={0}
+                            style={{ justifyContent: 'space-between', width: '100%' }}
                         >
-                            忘记密码 ?
-                        </a>
-                    </div>
+                            <ProFormCheckbox noStyle name="autoLogin">
+                                <span style={{ whiteSpace: 'nowrap' }}>自动登录</span>
+                            </ProFormCheckbox>
+                            <Button type={'link'} onClick={toRegister}>
+                                新用户注册
+                            </Button>
+                            <Button type={'link'}>忘记密码 ?</Button>
+                        </Space>
+                    </Form.Item>
                 </LoginForm>
             </div>
             <Footer />

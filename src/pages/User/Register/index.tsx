@@ -1,7 +1,7 @@
 import { Footer } from '@/components';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { Form, message, Tabs } from 'antd';
-import { LoginForm, ProFormText } from '@ant-design/pro-components';
+import { Button, Form, message, Tabs } from 'antd';
+import { LoginForm, ProFormText, ProForm } from '@ant-design/pro-components';
 import { Helmet, history } from '@umijs/max';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
@@ -49,23 +49,36 @@ const Register: React.FC = () => {
     const { styles } = useStyles();
     const [form] = Form.useForm();
 
+    const toLogin = () => {
+        const urlParams = new URL(window.location.href).searchParams;
+        const urlParamsRedirect = urlParams.get('redirect');
+        history.push({
+            pathname: '/user/login',
+            search: urlParamsRedirect ? `?redirect=${urlParamsRedirect}` : '',
+        });
+    };
+
     const handleSubmit = async () => {
         const formData = form.getFieldsValue();
         try {
             // 注册
-            const registerResp = await register({ ...formData, planetCode: '123' });
-            if (registerResp.code !== undefined && registerResp.code >= 0) {
+            const registerResp = await register({
+                ...formData,
+                planetCode: Math.round(Math.random() * 10000),
+            });
+            if (registerResp.code === 0) {
                 const defaultLoginSuccessMessage = `注册成功！`;
                 message.success(defaultLoginSuccessMessage);
-                const urlParams = new URL(window.location.href).searchParams;
-                history.push(`/user/login?redirect=${urlParams.get('redirect')}`);
-            } else throw new Error(`register error id = ${registerResp.code}`);
+                toLogin();
+            } else {
+                throw new Error(registerResp.description);
+            }
         } catch (error) {
-            const defaultLoginFailureMessage = '注册失败，请重试！';
-            console.log(error);
-            message.error(defaultLoginFailureMessage);
+            const errorMessage = (error as { message: string }).message;
+            message.error(errorMessage ?? '注册失败，请重试！');
         }
     };
+
     return (
         <div className={styles.container}>
             <Helmet>
@@ -96,6 +109,7 @@ const Register: React.FC = () => {
                         searchConfig: {
                             submitText: '注册',
                         },
+                        submitButtonProps: {},
                     }}
                 >
                     <Tabs
@@ -183,6 +197,22 @@ const Register: React.FC = () => {
                                     },
                                 ]}
                             />
+                            <ProForm.Item
+                                style={{
+                                    marginBottom: '14px',
+                                    marginTop: '-10px',
+                                }}
+                            >
+                                <Button
+                                    style={{
+                                        float: 'right',
+                                    }}
+                                    type={'link'}
+                                    onClick={toLogin}
+                                >
+                                    已有账号？前往登录
+                                </Button>
+                            </ProForm.Item>
                         </>
                     )}
                 </LoginForm>

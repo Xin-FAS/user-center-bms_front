@@ -12,8 +12,8 @@ import React from 'react';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 const registerPath = '/user/register';
-// 拦截白名单
-const whileList = [loginPath, registerPath];
+// 免登录白名单
+const NO_NEED_LOGIN_WHILE_LIST = [loginPath, registerPath];
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -26,10 +26,8 @@ export async function getInitialState(): Promise<{
 }> {
     const fetchUserInfo = async () => {
         try {
-            const msg = await queryCurrentUser({
-                skipErrorHandler: true,
-            });
-            return msg.data;
+            const currentUser = await queryCurrentUser();
+            return currentUser.data;
         } catch (error) {
             history.push(loginPath);
         }
@@ -37,7 +35,7 @@ export async function getInitialState(): Promise<{
     };
     // 如果不是在白名单中，执行
     const { location } = history;
-    if (!whileList.includes(location.pathname)) {
+    if (!NO_NEED_LOGIN_WHILE_LIST.includes(location.pathname)) {
         const currentUser = await fetchUserInfo();
         return {
             fetchUserInfo,
@@ -56,14 +54,14 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     return {
         actionsRender: () => [<Question key="doc" />],
         avatarProps: {
-            src: initialState?.currentUser?.avatar,
+            src: initialState?.currentUser?.avatarUrl,
             title: <AvatarName />,
             render: (_, avatarChildren) => {
                 return <AvatarDropdown>{avatarChildren}</AvatarDropdown>;
             },
         },
         waterMarkProps: {
-            content: initialState?.currentUser?.name,
+            content: initialState?.currentUser?.username,
         },
         footerRender: () => <Footer />,
         onPageChange: () => {
