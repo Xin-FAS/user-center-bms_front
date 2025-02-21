@@ -2,8 +2,8 @@ import { Footer } from '@/components';
 import { login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
-import { history, useModel, Helmet } from '@umijs/max';
-import { Alert, Button, message, Tabs, Divider, Space, Form } from 'antd';
+import { Helmet, history, useModel } from '@umijs/max';
+import { Button, Divider, Form, message, Space, Tabs } from 'antd';
 import Settings from '../../../../config/defaultSettings';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -45,22 +45,7 @@ const useStyles = createStyles(({ token }) => {
         },
     };
 });
-const LoginMessage: React.FC<{
-    content: string;
-}> = ({ content }) => {
-    return (
-        <Alert
-            style={{
-                marginBottom: 24,
-            }}
-            message={content}
-            type="error"
-            showIcon
-        />
-    );
-};
 const Login: React.FC = () => {
-    const [userLoginState, setUserLoginState] = useState<API.LoginResult>({});
     const [type, setType] = useState<string>('account');
     const { initialState, setInitialState } = useModel('@@initialState');
     const { styles } = useStyles();
@@ -89,17 +74,15 @@ const Login: React.FC = () => {
                 const urlParams = new URL(window.location.href).searchParams;
                 history.push(urlParams.get('redirect') || '/');
                 return;
+            } else {
+                message.error('登录失败，请检查账号或密码');
             }
-            // 如果失败去设置用户错误信息
-            setUserLoginState(user);
         } catch (error) {
             const defaultLoginFailureMessage = '登录失败，请重试！';
             console.log(error);
             message.error(defaultLoginFailureMessage);
         }
     };
-    const { status, type: loginType } = userLoginState;
-
     // 前往注册页面
     const toRegister = () => {
         const urlParams = new URL(window.location.href).searchParams;
@@ -149,10 +132,6 @@ const Login: React.FC = () => {
                             },
                         ]}
                     />
-
-                    {status === 'error' && loginType === 'account' && (
-                        <LoginMessage content={'错误的用户名和密码(admin/ant.design)'} />
-                    )}
                     {type === 'account' && (
                         <>
                             <ProFormText
@@ -189,9 +168,6 @@ const Login: React.FC = () => {
                                 ]}
                             />
                         </>
-                    )}
-                    {status === 'error' && loginType === 'mobile' && (
-                        <LoginMessage content="验证码错误" />
                     )}
                     <Form.Item>
                         <Space

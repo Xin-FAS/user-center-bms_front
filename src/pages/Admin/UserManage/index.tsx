@@ -111,7 +111,17 @@ export default (): React.ReactNode => {
                         <PlusOutlined /> 新建
                     </Button>,
                 ]}
-                request={searchUsers}
+                request={async () => {
+                    return new Promise((resolve) => {
+                        searchUsers().then((data) => {
+                            resolve({
+                                data,
+                                success: true,
+                                total: data.length,
+                            });
+                        });
+                    });
+                }}
                 columns={columns}
                 rowSelection={{
                     onChange: (_, selectedRows) => {

@@ -62,17 +62,13 @@ const Register: React.FC = () => {
         const formData = form.getFieldsValue();
         try {
             // 注册
-            const registerResp = await register({
+            await register({
                 ...formData,
                 planetCode: Math.round(Math.random() * 10000),
             });
-            if (registerResp.code === 0) {
-                const defaultLoginSuccessMessage = `注册成功！`;
-                message.success(defaultLoginSuccessMessage);
-                toLogin();
-            } else {
-                throw new Error(registerResp.description);
-            }
+            const defaultLoginSuccessMessage = `注册成功！`;
+            message.success(defaultLoginSuccessMessage);
+            toLogin();
         } catch (error) {
             const errorMessage = (error as { message: string }).message;
             message.error(errorMessage ?? '注册失败，请重试！');
